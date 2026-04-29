@@ -6,17 +6,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
     #map {
-    height: 100vh;
-    width: 100%;
+        height: calc(100vh - 56px);
+        width: 100%;
+        margin-top: -56px; /* batalkan padding-top dari body khusus untuk peta */
+        position: relative;
+        z-index: 1;
     }
-</style>
+    </style>
 @endsection
 
 @section('content')
@@ -41,19 +38,18 @@
                             <label for="description_point" class="form-label">Description</label>
                             <textarea class="form-control" id="description_point" name="description" rows="3"></textarea>
                         </div>
-
-                        <!-- FIX: hidden geometry -->
-                        <input type="hidden" id="geometry_point" name="geometry_point">
-
                         <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input class="form-control" type="file" id="image" name="image"
+                            <label for="geometry_point" class="form-label">Geometry</label>
+                            <textarea class="form-control" id="geometry_point" name="geometry_point" rows="2" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image_point" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image_point" name="image"
                                 onchange="document.getElementById('preview-image-point').src = window.URL.createObjectURL(this.files[0])">
-                            </div>
-                                <div class ="mb-3">
-                                    <img src="" alt="" id="preview-image-point" class="img-thumbnail"
-                                    width="400">
-                                </div>
+                        </div>
+                        <div class="mb-3">
+                            <img src="" alt="" id="preview-image-point" class="img-thumbnail" width="400">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -73,32 +69,28 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{ route('polylines.store') }}" method="post" enctype="multipart/form-data">
-
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="name_polylines" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name_polylines" name="name" placeholder="Enter name">
                         </div>
-
-                        <!-- FIX: tambah description -->
                         <div class="mb-3">
                             <label for="description_polylines" class="form-label">Description</label>
                             <textarea class="form-control" id="description_polylines" name="description"></textarea>
                         </div>
-
-                        <!-- FIX: hidden geometry -->
-                        <input type="hidden" id="geometry_polylines" name="geometry_polylines">
-
                         <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input class="form-control" type="file" id="image" name="image"
+                            <label for="geometry_polylines" class="form-label">Geometry</label>
+                            <textarea class="form-control" id="geometry_polylines" name="geometry_polylines" rows="2" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image_polylines" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image_polylines" name="image"
                                 onchange="document.getElementById('preview-image-polylines').src = window.URL.createObjectURL(this.files[0])">
-                            </div>
-                                <div class ="mb-3">
-                                    <img src="" alt="" id="preview-image-polylines" class="img-thumbnail"
-                                    width="400">
-                                </div>
+                        </div>
+                        <div class="mb-3">
+                            <img src="" alt="" id="preview-image-polylines" class="img-thumbnail" width="400">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -110,48 +102,45 @@
     </div>
 
     {{-- Modal Form Input untuk Polygon --}}
-<div class="modal" tabindex="-1" id="modalInputPolygon">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Input Polygon</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal" tabindex="-1" id="modalInputPolygon">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Input Polygon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('polygons.store') }}" method="post" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name_polygon" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name_polygon" name="name" placeholder="Enter name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description_polygon" class="form-label">Description</label>
+                            <textarea class="form-control" id="description_polygon" name="description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="geometry_polygon" class="form-label">Geometry</label>
+                            <textarea class="form-control" id="geometry_polygon" name="geometry_polygon" rows="2" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image_polygon" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image_polygon" name="image"
+                                onchange="document.getElementById('preview-image-polygons').src = window.URL.createObjectURL(this.files[0])">
+                        </div>
+                        <div class="mb-3">
+                            <img src="" alt="" id="preview-image-polygons" class="img-thumbnail" width="400">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
-            <form action="{{ route('polygons.store') }}" method="post" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="name_polygon" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name_polygon" name="name" placeholder="Enter name">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="description_polygon" class="form-label">Description</label>
-                        <textarea class="form-control" id="description_polygon" name="description"></textarea>
-                    </div>
-
-                    <!-- hidden geometry -->
-                    <input type="hidden" id="geometry_polygon" name="geometry_polygon">
-
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Image</label>
-                        <input class="form-control" type="file" id="image" name="image"
-                            onchange="document.getElementById('preview-image-polygons').src = window.URL.createObjectURL(this.files[0])">
-                    </div>
-
-                    <div class="mb-3">
-                        <img src="" alt="" id="preview-image-polygons" class="img-thumbnail" width="400">
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 @endsection
 
 @section('scripts')
@@ -231,57 +220,57 @@
         L.control.layers(baseMaps).addTo(map);
 
         // GeoJSON Points
-var points = L.geoJSON(null, {
-    onEachFeature: function(feature, layer) {
-        var popup_content = "Nama: " + feature.properties.name + "<br>" +
-            "Deskripsi: " + feature.properties.description + "<br>" +
-            "Dibuat: " + feature.properties.created_at +
-            (feature.properties.image
-                ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Point' class='img-thumbnail' width='100'>"
-                : "");
-        layer.bindPopup(popup_content);
-    }
-});
+        var points = L.geoJSON(null, {
+            onEachFeature: function(feature, layer) {
+                var popup_content = "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at +
+                    (feature.properties.image
+                        ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Point' class='img-thumbnail' width='100'>"
+                        : "");
+                layer.bindPopup(popup_content);
+            }
+        });
 
-$.getJSON("{{ route('geojson.points') }}", function(data) {
-    points.addData(data);
-    map.addLayer(points);
-});
+        $.getJSON("{{ route('geojson.points') }}", function(data) {
+            points.addData(data);
+            map.addLayer(points);
+        });
 
-// GeoJSON Polylines
-var polylines = L.geoJSON(null, {
-    onEachFeature: function(feature, layer) {
-        var popup_content = "Nama: " + feature.properties.name + "<br>" +
-            "Deskripsi: " + feature.properties.description + "<br>" +
-            "Dibuat: " + feature.properties.created_at +
-            (feature.properties.image
-                ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Polylines' class='img-thumbnail' width='100'>"
-                : "");
-        layer.bindPopup(popup_content);
-    }
-});
+        // GeoJSON Polylines
+        var polylines = L.geoJSON(null, {
+            onEachFeature: function(feature, layer) {
+                var popup_content = "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at +
+                    (feature.properties.image
+                        ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Polylines' class='img-thumbnail' width='100'>"
+                        : "");
+                layer.bindPopup(popup_content);
+            }
+        });
 
-$.getJSON("{{ route('geojson.polylines') }}", function(data) {
-    polylines.addData(data);
-    map.addLayer(polylines);
-});
+        $.getJSON("{{ route('geojson.polylines') }}", function(data) {
+            polylines.addData(data);
+            map.addLayer(polylines);
+        });
 
-// GeoJSON Polygons
-var polygons = L.geoJSON(null, {
-    onEachFeature: function(feature, layer) {
-        var popup_content = "Nama: " + feature.properties.name + "<br>" +
-            "Deskripsi: " + feature.properties.description + "<br>" +
-            "Dibuat: " + feature.properties.created_at +
-            (feature.properties.image
-                ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Polygons' class='img-thumbnail' width='100'>"
-                : "");
-        layer.bindPopup(popup_content);
-    }
-});
+        // GeoJSON Polygons
+        var polygons = L.geoJSON(null, {
+            onEachFeature: function(feature, layer) {
+                var popup_content = "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at +
+                    (feature.properties.image
+                        ? "<br><img src='{{ asset('storage') }}/" + feature.properties.image + "' alt='Image Polygons' class='img-thumbnail' width='100'>"
+                        : "");
+                layer.bindPopup(popup_content);
+            }
+        });
 
-$.getJSON("{{ route('geojson.polygons') }}", function(data) {
-    polygons.addData(data);
-    map.addLayer(polygons);
-});
+        $.getJSON("{{ route('geojson.polygons') }}", function(data) {
+            polygons.addData(data);
+            map.addLayer(polygons);
+        });
     </script>
 @endsection

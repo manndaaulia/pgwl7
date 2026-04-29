@@ -17,14 +17,18 @@
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
+    <style>
+        body {
+            padding-top: 56px;
+        }
+    </style>
+
     @yield('styles')
 </head>
 
 <body>
     @include('components.navbar')
     @yield('content')
-
-    <div id="map"></div>
 
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"

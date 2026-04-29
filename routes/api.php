@@ -12,7 +12,7 @@ Route::get('/user', function (Request $request) {
 Route::get('/points', [ApiController::class, 'geojson_points'])
     ->name('geojson.points');
 
-// Polylines
+// Polylinesp
 Route::get('/polylines', [ApiController::class, 'geojson_polylines'])
     ->name('geojson.polylines');
 //Polygons

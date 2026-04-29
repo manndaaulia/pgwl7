@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class polylinesModel extends Model
+class PolylinesModel extends Model
 {
     protected $table = 'polylines';
     protected $guarded = ['id'];
@@ -17,7 +17,8 @@ class polylinesModel extends Model
             ST_AsGeoJSON(geom) as geojson,
             name,
             description,
-            image
+            image,
+            created_at
         '))->get();
 
         $geojson = [
@@ -33,7 +34,8 @@ class polylinesModel extends Model
                     'id' => $p->id,
                     'name' => $p->name,
                     'description' => $p->description,
-                    'image' => $p->image
+                    'image' => $p->image,
+                    'created_at' => $p->created_at,
                 ]
             ];
 

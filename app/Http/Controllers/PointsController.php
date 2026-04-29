@@ -2,40 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\pointsModel;
+use App\Models\PointsModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PointsController extends Controller
 {
-    protected $points; // deklarasi property
+    protected $points;
 
-    /**
-     * Display a listing of the resource.
-     */
     public function __construct()
     {
-        $this->points = new pointsModel();
+        $this->points = new PointsModel();
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         // Validasi input
@@ -44,6 +33,7 @@ class PointsController extends Controller
                 'geometry_point' => 'required',
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
                 'geometry_point.required' => 'Geometry point is required.',
@@ -55,18 +45,13 @@ class PointsController extends Controller
             ]
         );
 
-        if (!is_dir('storage/images')) {
-            mkdir('./storage/images', 0777);
+        // Handle upload image
+        $name_image = null;
+
+        if ($request->hasFile('image')) {
+            $name_image = $request->file('image')->store('images', 'public');
         }
 
-        //Get the uploaded image
-        if ($request->hasFile('image')) {
-        $image = $request->file('image');
-        $name_image = time() . "_point." . strtolower($image->getClientOriginalExtension());
-        $image->move('storage/images', $name_image);
-        } else {
-        $name_image = null;
-        }
         $data = [
             'geom' => $request->geometry_point,
             'name' => $request->name,
@@ -74,45 +59,64 @@ class PointsController extends Controller
             'image' => $name_image,
         ];
 
-        // simpan data ke database
-        if (!$this->points->create($data)) {
-        // kembali ke halaman peta
-            return redirect()->route('peta')->with('error', 'Gagal menyimpan data point.');
-        }
+        // Simpan data ke database
+        try {
+            $this->points->create($data);
 
-        // kembali ke halaman peta dengan pesan sukses
-        return redirect()->route('peta')->with('success', 'Data point berhasil disimpan!');
+            return redirect()->route('peta')->with('success', 'Data point berhasil disimpan!');
+        } catch (\Exception $e) {
+            return redirect()->route('peta')->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $point = $this->points->findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $imageName = $point->image;
+
+        if ($request->hasFile('image')) {
+            if ($point->image) {
+                Storage::disk('public')->delete($point->image);
+            }
+            $imageName = $request->file('image')->store('images', 'public');
+        }
+
+        $point->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $imageName,
+        ]);
+
+        return redirect()->route('peta')->with('success', 'Data berhasil diupdate');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $point = $this->points->findOrFail($id);
+
+        if ($point->image) {
+            Storage::disk('public')->delete($point->image);
+        }
+
+        $point->delete();
+
+        return redirect()->route('peta')->with('success', 'Data berhasil dihapus');
     }
 }
