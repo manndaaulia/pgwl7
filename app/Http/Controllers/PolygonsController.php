@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PolygonsModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PolygonsController extends Controller
 {
@@ -62,6 +63,35 @@ class PolygonsController extends Controller
         }
     }
 
+    public function geojson()
+    {
+        $polygons = $this->polygons->all();
+
+        $features = [];
+
+        foreach ($polygons as $polygon) {
+            $geom = DB::select("SELECT ST_AsGeoJSON(geom) as geom FROM polygons WHERE id = ?", [$polygon->id]);
+
+            $features[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($geom[0]->geom),
+                'properties' => [
+                    'id' => $polygon->id,
+                    'name' => $polygon->name,
+                    'description' => $polygon->description,
+                    'image' => $polygon->image,
+                    'created_at' => $polygon->created_at,
+                    'updated_at' => $polygon->updated_at,
+                ],
+            ];
+        }
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
+    }
+
     /**
      * Update data
      */
@@ -77,14 +107,10 @@ class PolygonsController extends Controller
 
         $imageName = $polygon->image;
 
-        // jika upload image baru
         if ($request->hasFile('image')) {
-
-            // hapus image lama
             if ($polygon->image) {
                 Storage::disk('public')->delete($polygon->image);
             }
-
             $imageName = $request->file('image')->store('images', 'public');
         }
 
@@ -104,7 +130,6 @@ class PolygonsController extends Controller
     {
         $polygon = $this->polygons->findOrFail($id);
 
-        // hapus image
         if ($polygon->image) {
             Storage::disk('public')->delete($polygon->image);
         }

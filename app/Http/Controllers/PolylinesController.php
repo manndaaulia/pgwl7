@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PolylinesModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PolylinesController extends Controller
 {
@@ -47,7 +48,7 @@ class PolylinesController extends Controller
             'geom' => $request->geometry_polylines,
             'name' => $request->name,
             'description' => $request->description,
-            'image' => $imageName, // simpan path image
+            'image' => $imageName,
         ];
 
         // SIMPAN
@@ -60,6 +61,35 @@ class PolylinesController extends Controller
             return redirect()->route('peta')
                 ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
         }
+    }
+
+    public function geojson()
+    {
+        $polylines = $this->polylines->all();
+
+        $features = [];
+
+        foreach ($polylines as $polyline) {
+            $geom = DB::select("SELECT ST_AsGeoJSON(geom) as geom FROM polylines WHERE id = ?", [$polyline->id]);
+
+            $features[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($geom[0]->geom),
+                'properties' => [
+                    'id' => $polyline->id,
+                    'name' => $polyline->name,
+                    'description' => $polyline->description,
+                    'image' => $polyline->image,
+                    'created_at' => $polyline->created_at,
+                    'updated_at' => $polyline->updated_at,
+                ],
+            ];
+        }
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
     }
 
     /**
@@ -77,14 +107,10 @@ class PolylinesController extends Controller
 
         $imageName = $polyline->image;
 
-        // jika upload image baru
         if ($request->hasFile('image')) {
-
-            // hapus image lama
             if ($polyline->image) {
                 Storage::disk('public')->delete($polyline->image);
             }
-
             $imageName = $request->file('image')->store('images', 'public');
         }
 
@@ -104,7 +130,6 @@ class PolylinesController extends Controller
     {
         $polyline = $this->polylines->findOrFail($id);
 
-        // hapus image
         if ($polyline->image) {
             Storage::disk('public')->delete($polyline->image);
         }

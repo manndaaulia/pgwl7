@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PointsModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PointsController extends Controller
 {
@@ -69,6 +70,35 @@ class PointsController extends Controller
         }
     }
 
+    public function geojson()
+    {
+        $points = $this->points->all();
+
+        $features = [];
+
+        foreach ($points as $point) {
+            $geom = DB::select("SELECT ST_AsGeoJSON(geom) as geom FROM points WHERE id = ?", [$point->id]);
+
+            $features[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($geom[0]->geom),
+                'properties' => [
+                    'id' => $point->id,
+                    'name' => $point->name,
+                    'description' => $point->description,
+                    'image' => $point->image,
+                    'created_at' => $point->created_at,
+                    'updated_at' => $point->updated_at,
+                ],
+            ];
+        }
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ]);
+    }
+
     public function show(string $id)
     {
         //
@@ -107,16 +137,29 @@ class PointsController extends Controller
         return redirect()->route('peta')->with('success', 'Data berhasil diupdate');
     }
 
-    public function destroy($id)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
     {
-        $point = $this->points->findOrFail($id);
+        //mencari nama file gambar
+        $image = $this->points->find($id)->image;
 
-        if ($point->image) {
-            Storage::disk('public')->delete($point->image);
+        //menghapus file gambar jika ada
+        if ($image != null) {
+            if (file_exists('./storage/images/' . $image)) {
+                unlink('./storage/images/' . $image);
+            }
         }
 
-        $point->delete();
+        //menghapus data dari database
+        if (!$this->points->destroy($id)) {
+            return redirect()->route('peta')
+                ->with('error', 'Gagal menghapus data point.');
+        }
 
-        return redirect()->route('peta')->with('success', 'Data berhasil dihapus');
+        //kembali ke halaman peta
+        return redirect()->route('peta')
+            ->with('success', 'Data point berhasil dihapus.');
     }
 }
